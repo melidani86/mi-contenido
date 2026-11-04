@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi Contenido</title>
+<meta name="description" content="Planificador de contenido para redes sociales">
+<meta name="theme-color" content="#f6f4fa">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mi Contenido">
+<meta name="application-name" content="Mi Contenido">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{
+  --bg:#f6f4fa; --panel:#ffffff; --text:#2a2638; --muted:#7b7690; --line:#ebe7f3;
+  --accent:#7b61ff; --accent-dark:#5a40e0; --accent-soft:#efebff; --danger:#d9434b;
+  --radius:16px; --shadow:0 1px 2px rgba(40,30,80,.05),0 6px 18px rgba(40,30,80,.06);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;
+  padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);min-height:100vh}
+body.bloqueado{overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:disabled{opacity:.45;cursor:default}
+input,textarea,select{font:inherit;font-size:16px;color:var(--text)}
+h1,h2,h3{margin:0}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-decoration:none;color:var(--text);min-height:38px;transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){border-color:#d8d1ea}
+.btn.primario{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primario:hover:not(:disabled){background:var(--accent-dark)}
+.btn.peligro{color:var(--danger)}
+.btn.icono{width:38px;height:38px;padding:0;justify-content:center}
+.btn.suave{background:var(--accent-soft);border-color:transparent;color:var(--accent-dark)}
+
+/* Cabecera */
+header.top{position:sticky;top:0;z-index:30;background:rgba(246,244,250,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.marca{font-weight:800;font-size:19px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.marca i{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#9b87ff,#ff9ec4);display:inline-block}
+.nav-semana{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+#rango{font-weight:700;margin-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acciones{display:flex;gap:6px}
+
+main{padding:14px 16px 120px;max-width:1600px;margin:0 auto}
+
+/* Resumen */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(110px,160px)) 1fr 1fr;gap:10px}
+.kpi{background:var(--panel);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)}
+.kpi-num{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.kpi-lbl{color:var(--muted);font-size:13px}
+.kpi.alerta .kpi-num{color:#c97a00}
+.mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:13px;background:#f6f4fa;border-radius:999px;padding:3px 9px;color:var(--text)}
+.pill b{font-weight:700}
+.pill.cero{opacity:.45}
+.punto{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+
+/* Filtros */
+.filtros{display:flex;align-items:center;gap:6px;margin:14px 0 10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.filtros::-webkit-scrollbar{display:none}
+.filtros .etq{color:var(--muted);font-size:13px;font-weight:600;margin-right:2px;white-space:nowrap}
+.filtros .sep{width:1px;height:22px;background:var(--line);margin:0 4px;flex:none}
+.chip{border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--panel);font-size:14px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;min-height:34px}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-dark);font-weight:600}
+.chip svg{width:16px;height:16px}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:14px;align-items:start}
+.semana{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.dia{background:var(--panel);border-radius:var(--radius);padding:8px;min-height:260px;box-shadow:var(--shadow);border:2px solid transparent;transition:background .12s,border-color .12s}
+.dia.hoy{border-color:#d9d0ff}
+.dia.sobre,.banco.sobre,#zona-banco.sobre{border-color:var(--accent);background:var(--accent-soft)}
+.dia-cab{display:flex;align-items:center;justify-content:space-between;padding:2px 2px 4px}
+.dia-nombre{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.dia-num{font-size:18px;font-weight:800;margin-left:4px}
+.dia.hoy .dia-num{color:#fff;background:var(--accent);border-radius:999px;padding:0 8px}
+.dia .nombre-largo{display:none}
+.btn-add{border:none;background:transparent;color:var(--muted);font-size:20px;width:30px;height:30px;border-radius:8px;line-height:1}
+.btn-add:hover{background:var(--accent-soft);color:var(--accent-dark)}
+.lista{min-height:40px}
+.vacio{color:#b7b2c8;font-size:12px;text-align:center;padding:14px 4px}
+
+/* Tarjetas */
+.card{position:relative;display:flex;gap:6px;align-items:flex-start;background:var(--ct,#fff);border:1px solid var(--line);border-left:5px solid var(--c,#999);
+  border-radius:10px;padding:7px 7px 7px 8px;margin-top:7px;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  touch-action:manipulation;transition:transform .12s,box-shadow .12s}
+.card:hover{box-shadow:0 4px 12px rgba(40,30,80,.1)}
+.card.arrastrando{opacity:.35}
+.card-cuerpo{flex:1;min-width:0}
+.card-tit{font-weight:650;font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.card-meta{display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap}
+.red-ico{width:18px;height:18px;display:inline-flex;flex:none}
+.red-ico svg{width:100%;height:100%}
+.fmt{font-size:11.5px;color:var(--muted);font-weight:600}
+.herr{width:16px;height:16px;border-radius:5px;color:#fff;font-size:10px;font-weight:800;display:inline-grid;place-items:center;flex:none;line-height:1}
+.thumb{width:40px;height:40px;border-radius:8px;overflow:hidden;flex:none;background:#eee;position:relative}
+.thumb img,.thumb video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-touch-callout:none}
+.thumb .n{position:absolute;right:2px;bottom:2px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;border-radius:4px;padding:0 3px}
+.ghost{position:fixed;left:0;top:0;z-index:1000;pointer-events:none;margin:0;box-shadow:0 14px 30px rgba(40,30,80,.25);transform-origin:center;opacity:.95}
+body.arrastrando-algo{user-select:none;-webkit-user-select:none;cursor:grabbing}
+
+/* Banco de ideas */
+.banco{background:var(--panel);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow);border:2px solid transparent;position:sticky;top:76px;max-height:calc(100vh - 92px);display:flex;flex-direction:column}
+.banco-cab{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.banco-cab h2{font-size:16px}
+.banco-form{display:grid;grid-template-columns:1fr auto;gap:6px;margin-bottom:6px}
+.banco-form input,.banco-form select{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fbfaff;min-width:0}
+.banco-form input{grid-column:1/-1}
+.banco-lista{overflow-y:auto;flex:1;margin:0 -4px;padding:0 4px 6px;-webkit-overflow-scrolling:touch}
+.idea{border-left-color:var(--cp,#bbb);--ct:#fff}
+.tag{font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px}
+.ayuda{color:var(--muted);font-size:13px;margin:4px 0}
+.cerrar-banco{display:none}
+.solo-cel{display:none}
+
+/* Botón flotante ideas y zona de soltar */
+.fab{display:none;position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:40;background:var(--text);color:#fff;border:none;border-radius:999px;padding:12px 18px;font-weight:700;box-shadow:0 8px 24px rgba(30,20,60,.3)}
+#zona-banco{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));z-index:900;background:#fff;border:2px dashed #c9bfff;border-radius:16px;
+  padding:14px 22px;font-weight:700;color:var(--accent-dark);box-shadow:0 10px 30px rgba(40,30,80,.2);white-space:nowrap}
+body.arrastrando-post #zona-banco{display:block}
+.fondo-banco{display:none}
+
+/* Modales */
+#capas{position:relative;z-index:500}
+.modal-fondo{position:fixed;inset:0;background:rgba(32,24,60,.38);display:flex;align-items:center;justify-content:center;padding:20px;animation:aparecer .15s}
+@keyframes aparecer{from{opacity:0}to{opacity:1}}
+.modal{background:var(--panel);border-radius:20px;width:min(700px,100%);max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(30,20,60,.25);overflow:hidden}
+.modal.chico{width:min(480px,100%)}
+.modal-cab{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px 20px;border-bottom:1px solid var(--line);gap:10px}
+.modal-cab h2{font-size:18px}
+.modal-cuerpo{padding:14px 20px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1}
+.modal-pie{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap;background:#fcfbff}
+.modal-pie .izq,.modal-pie .der{display:flex;gap:6px;flex-wrap:wrap}
+.modal-pie .der{margin-left:auto}
+.campo{display:flex;flex-direction:column;gap:5px;margin:12px 0}
+.campo>span,.seccion-tit{font-size:13px;font-weight:700;color:var(--muted)}
+.campo input,.campo textarea,.campo select,textarea.grande{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fbfaff;width:100%;outline:none}
+.campo input:focus,.campo textarea:focus,textarea.grande:focus,.link-fila input:focus,.banco-form input:focus{border-color:var(--accent);background:#fff}
+.campo textarea,textarea.grande{resize:vertical;min-height:70px;line-height:1.45}
+.fila2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fila2 .campo{margin-bottom:0}
+.grupo{margin:14px 0}
+.grupo .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip.estado.on{background:var(--ct);border-color:var(--c);color:var(--text)}
+.seccion{margin:18px 0 6px;padding-top:14px;border-top:1px solid var(--line)}
+.seccion-tit{margin-bottom:8px;display:block}
+.fila-botones{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.link-fila{display:grid;grid-template-columns:1fr 1.4fr auto auto;gap:6px;margin-bottom:6px}
+.link-fila input{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fbfaff;min-width:0;outline:none}
+.arch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.arch{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#faf9fd}
+.arch-media{aspect-ratio:1;background:#eee;display:grid;place-items:center;color:var(--muted);font-size:12px}
+.arch-media img,.arch-media video{width:100%;height:100%;object-fit:cover;display:block}
+.arch-ctrl{display:flex;align-items:center;justify-content:space-between;padding:3px}
+.arch-ctrl span{font-size:12px;font-weight:700;color:var(--muted)}
+.mini-btn{border:none;background:transparent;width:28px;height:28px;border-radius:8px;font-size:14px}
+.mini-btn:hover:not(:disabled){background:var(--accent-soft)}
+.check{display:flex;gap:10px;align-items:center;font-weight:600;padding:10px 0}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+.aviso{border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
+.aviso.ok{background:#e9f8f0;color:#1e6b45}
+.aviso.warn{background:#fff5e0;color:#8a5a00}
+.aviso.error{background:#fdecec;color:#9b1c22}
+.aviso ul{margin:6px 0 0;padding-left:18px}
+.aviso li{margin:3px 0}
+.menu-grupo{margin:6px 0 14px}
+.menu-tit{font-size:13px;font-weight:700;color:var(--muted);margin:0 0 6px}
+.menu-item{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:6px;font-weight:650}
+.menu-item:hover{background:#faf9ff;border-color:#d8d1ea}
+.menu-item small{display:block;color:var(--muted);font-weight:400;font-size:13px;margin-top:2px}
+.prev-dia{margin:12px 0 4px;font-weight:800;font-size:14px}
+.prev-dia small{color:var(--muted);font-weight:600}
+.prev-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;margin-bottom:5px;font-size:14px}
+.prev-item .fmt{margin-left:auto}
+
+/* Toast */
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:#2a2638;color:#fff;padding:11px 18px;border-radius:14px;font-weight:600;
+  font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:2000;max-width:calc(100% - 32px);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+#toast.ver{opacity:1;transform:translate(-50%,0)}
+#toast.error{background:var(--danger)}
+
+/* Tableta: el banco pasa a ser un panel */
+@media (max-width:1100px){
+  .layout{grid-template-columns:1fr}
+  .banco{position:fixed;top:0;right:0;bottom:0;width:min(340px,88vw);max-height:none;border-radius:20px 0 0 20px;z-index:450;transform:translateX(105%);
+    transition:transform .22s ease;padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  .banco.abierto{transform:none}
+  .fondo-banco.ver{display:block;position:fixed;inset:0;background:rgba(32,24,60,.3);z-index:440}
+  .cerrar-banco{display:inline-flex}
+  .fab{display:block}
+  body.arrastrando-algo .fab{display:none}
+}
+/* Celular */
+@media (max-width:760px){
+  header.top{padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;gap:8px}
+  .marca{font-size:17px;flex:1}
+  .nav-semana{order:3;flex-basis:100%}
+  #rango{font-size:15px}
+  .btn-texto{display:none}
+  main{padding:12px 12px 120px}
+  .kpis{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi{padding:9px 12px;border-radius:14px}
+  .kpi-num{font-size:22px}
+  .kpi.ancho{grid-column:1/-1;display:flex;align-items:center;gap:8px}
+  .kpi.ancho .mini{margin-top:0}
+  .kpi.ancho .kpi-lbl{white-space:nowrap}
+  .pill.cero{display:none}
+  .solo-cel{display:inline;margin:0}
+  .filtros{margin:10px 0 8px}
+  .semana{grid-template-columns:1fr;gap:8px}
+  .dia{min-height:0;padding:8px 10px}
+  .dia .nombre-largo{display:inline}
+  .dia .nombre-corto{display:none}
+  .dia-cab{justify-content:flex-start;gap:8px}
+  .dia-cab .btn-add{margin-left:auto}
+  .lista{display:grid;grid-template-columns:1fr 1fr;gap:0 7px;min-height:36px}
+  .vacio{grid-column:1/-1;padding:6px}
+  .card-tit{font-size:14px}
+  .modal-fondo{padding:0;align-items:flex-end}
+  .modal,.modal.chico{width:100%;max-height:calc(100% - env(safe-area-inset-top) - 10px);border-radius:20px 20px 0 0}
+  .modal-pie{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .link-fila{grid-template-columns:1fr auto auto}
+  .link-fila input[data-lcampo="nombre"]{grid-column:1/-1}
+}
+@media (max-width:380px){ .lista{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="marca"><i></i>Mi Contenido</div>
+  <div class="nav-semana">
+    <button class="btn icono" data-action="semana-ant" aria-label="Semana anterior" title="Semana anterior">◀</button>
+    <button class="btn" data-action="semana-hoy">Hoy</button>
+    <button class="btn icono" data-action="semana-sig" aria-label="Semana siguiente" title="Semana siguiente">▶</button>
+    <span id="rango"></span>
+  </div>
+  <div class="acciones">
+    <button class="btn primario" data-action="nuevo-post">＋<span class="btn-texto"> Nuevo post</span></button>
+    <button class="btn" data-action="menu">⋯<span class="btn-texto"> Más</span></button>
+  </div>
+</header>
+
+<main>
+  <section id="resumen"></section>
+  <section id="filtros" class="filtros"></section>
+  <div class="layout">
+    <div id="calendario"></div>
+    <aside id="banco" class="banco" data-drop="banco"></aside>
+  </div>
+</main>
+
+<div class="fondo-banco" data-action="cerrar-banco"></div>
+<button class="fab" data-action="abrir-banco" id="fab-ideas">💡 Ideas</button>
+<div id="zona-banco" data-drop="banco">💡 Suelta aquí para devolverlo al banco de ideas</div>
+<div id="capas"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="input-respaldo" hidden>
+
+<script>
+'use strict';
+/* =========================================================
+   Mi Contenido — planificador de redes sociales
+   Datos: localStorage (posts) + IndexedDB (fotos y videos)
+   ========================================================= */
+
+// ---------- Listas fijas ----------
+const REDES = ['Instagram','TikTok','YouTube','Threads'];
+const FORMATOS = ['Carrusel','Reel','Historia','Video largo'];
+const ESTADOS = ['Idea','Guion','Grabado','Programado','Publicado'];
+const PILARES = ['Educativo','Venta','Personal','Inspiración'];
+const HERRAMIENTAS = ['Canva','CapCut','Edits','Otro'];
+const COLOR_ESTADO = {Idea:'#9aa5b8',Guion:'#f0b43c',Grabado:'#5b9cf0',Programado:'#a07ae6',Publicado:'#3fb67e'};
+const COLOR_PILAR = {Educativo:'#5b9cf0',Venta:'#3fb67e',Personal:'#ee7fb0',Inspiración:'#f0b43c'};
+const COLOR_RED = {Instagram:'#d6337a',TikTok:'#1f1f2e',YouTube:'#e53935',Threads:'#2a2a2a'};
+const HERR = {Canva:{l:'C',bg:'linear-gradient(135deg,#00c4cc,#7d2ae8)'},CapCut:{l:'✂︎',bg:'#1c1c1c'},Edits:{l:'E',bg:'#2f6fed'},Otro:{l:'•',bg:'#9a96ad'}};
+const DIAS = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+const DIAS_CORTOS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESES_LARGOS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const ICONO_RED = {
+  Instagram:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="7" r="1.2" fill="currentColor"/></svg>',
+  TikTok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 3.5v11a3.5 3.5 0 1 1-3.5-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M13.5 3.5c.4 2.6 2.3 4.4 5 4.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  YouTube:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4" fill="currentColor"/><path d="M10 9.2v5.6l4.8-2.8z" fill="#fff"/></svg>',
+  Threads:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.6 11.2c-.4-2.3-1.9-3.4-3.9-3.4-2.4 0-4 1.8-4 4.3s1.5 4.3 3.9 4.3c2 0 3.4-1 3.4-2.6 0-1.4-1.2-2.3-3-2.3-1.6 0-2.6.7-2.6 1.8M12 20.5c-4.7 0-8-3.4-8-8.5s3.3-8.5 8-8.5c3.8 0 6.4 2 7.4 5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>'
+};
+
+// ---------- Instrucciones para la IA (mismo texto que FORMATO-IA.md) ----------
+const INSTRUCCIONES_IA = `Eres mi asistente de contenido para redes sociales. Cuando te pida un plan de contenido, respóndeme SOLO con un JSON dentro de un bloque de código, sin texto antes ni después, para que yo lo pueda pegar en mi app "Mi Contenido". Usa exactamente este formato:
+
+{
+  "posts": [
+    {
+      "titulo": "5 errores al empezar en Instagram",
+      "dia": "lunes",
+      "hora": "19:00",
+      "red": "Instagram",
+      "formato": "Carrusel",
+      "estado": "Idea",
+      "pilar": "Educativo",
+      "caption": "Texto completo del caption, listo para publicar.",
+      "hashtags": "#emprendimiento #instagramtips #marketingdigital",
+      "cta": "Guarda este post para cuando lo necesites",
+      "notas": "Guion o ideas para grabar. Diapositiva 1: ... Diapositiva 2: ...",
+      "editado_en": ["Canva"],
+      "links": [
+        { "nombre": "Referencia", "url": "https://ejemplo.com" }
+      ]
+    }
+  ],
+  "ideas": [
+    { "titulo": "Idea suelta para más adelante", "pilar": "Personal" }
+  ]
+}
+
+REGLAS
+1. Usa estos nombres de campo tal cual (en minúsculas y sin tildes): titulo, dia, fecha, hora, red, formato, estado, pilar, caption, hashtags, cta, notas, editado_en, links.
+2. El día de publicación se indica de UNA de estas dos formas:
+   - "dia": el día de la semana en español: "lunes", "martes", "miércoles", "jueves", "viernes", "sábado" o "domingo". La app lo coloca en la semana que yo esté viendo.
+   - "fecha": una fecha exacta con formato AAAA-MM-DD, por ejemplo "2026-11-10". Si pones "fecha", no hace falta "dia".
+3. Las ideas sueltas sin día van en la lista "ideas" (solo con "titulo" y "pilar"), o en "posts" sin "dia" ni "fecha". Todas irán a mi banco de ideas.
+4. "hora": formato de 24 horas HH:MM, por ejemplo "09:30" o "19:00". Es opcional.
+5. Valores permitidos (escríbelos exactamente así):
+   - red: "Instagram", "TikTok", "YouTube" o "Threads"
+   - formato: "Carrusel", "Reel", "Historia" o "Video largo"
+   - estado: "Idea", "Guion", "Grabado", "Programado" o "Publicado" (si no estás segura, usa "Idea")
+   - pilar: "Educativo", "Venta", "Personal" o "Inspiración"
+   - editado_en: una lista con cero o más de estos: "Canva", "CapCut", "Edits", "Otro"
+6. "hashtags" es un solo texto con los hashtags separados por espacios.
+7. "links" es una lista de objetos con "nombre" y "url" (la url empieza con https://). Si no hay links, usa una lista vacía: [].
+8. Todos los textos van en español y entre comillas dobles. Dentro de los textos NO uses comillas dobles: si necesitas citar algo usa comillas simples ' ' o « ». Para saltos de línea dentro de un texto escribe \\n.
+9. No dejes una coma después del último elemento de una lista y no agregues comentarios dentro del JSON.`;
+
+// ---------- Utilidades ----------
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const parseYmd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const sumarDias = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+function lunesDe(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x; }
+function tamTexto(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(0) + ' KB';
+  if (b < 1024 ** 3) return (b / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB';
+  return (b / 1024 ** 3).toFixed(2).replace('.', ',') + ' GB';
+}
+function fechaBonita(s, largo) {
+  const d = parseYmd(s), i = (d.getDay() + 6) % 7;
+  const n = DIAS[i][0].toUpperCase() + DIAS[i].slice(1);
+  return largo ? `${n} ${d.getDate()} de ${MESES_LARGOS[d.getMonth()]}` : `${n} ${d.getDate()} ${MESES[d.getMonth()]}`;
+}
+function urlSegura(u) {
+  u = String(u || '').trim();
+  if (!u) return '';
+  if (/^(javascript|data|vbscript):/i.test(u)) return '';
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u;
+  return u;
+}
+const esTactil = () => matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+
+let toastTimer;
+function toast(msg, tipo) {
+  const t = $('#toast');
+  t.textContent = msg; t.className = 'ver' + (tipo ? ' ' + tipo : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', tipo === 'error' ? 5000 : 2800);
+}
+
+// ---------- Datos (localStorage) ----------
+const LS_DATOS = 'miContenido.datos.v1';
+const LS_UI = 'miContenido.ui.v1';
+let posts = [];
+let ui = { filtroRed: [], filtroEstado: [], ultimoRespaldo: null };
+let semana = lunesDe(new Date());
+
+function normalizarPost(p) {
+  p = p || {};
+  return {
+    id: String(p.id || uid()),
+    titulo: String(p.titulo ?? ''),
+    fecha: /^\d{4}-\d{2}-\d{2}$/.test(p.fecha || '') ? p.fecha : null,
+    hora: /^\d{2}:\d{2}$/.test(p.hora || '') ? p.hora : '',
+    red: REDES.includes(p.red) ? p.red : 'Instagram',
+    formato: FORMATOS.includes(p.formato) ? p.formato : 'Reel',
+    estado: ESTADOS.includes(p.estado) ? p.estado : 'Idea',
+    pilar: PILARES.includes(p.pilar) ? p.pilar : 'Educativo',
+    caption: String(p.caption ?? ''), hashtags: String(p.hashtags ?? ''), cta: String(p.cta ?? ''), notas: String(p.notas ?? ''),
+    editado: Array.isArray(p.editado) ? HERRAMIENTAS.filter(h => p.editado.includes(h)) : [],
+    links: Array.isArray(p.links) ? p.links.filter(l => l && typeof l === 'object').map(l => ({ nombre: String(l.nombre ?? ''), url: String(l.url ?? '') })) : [],
+    archivos: Array.isArray(p.archivos) ? p.archivos.filter(a => a && a.id).map(a => ({ id: String(a.id), nombre: String(a.nombre || 'archivo'), tipo: String(a.tipo || ''), tam: +a.tam || 0 })) : [],
+    creado: +p.creado || Date.now()
+  };
+}
+function cargarDatos() {
+  try { const d = JSON.parse(localStorage.getItem(LS_DATOS)); if (d && Array.isArray(d.posts)) posts = d.posts.map(normalizarPost); } catch (e) { posts = []; }
+  try { const u = JSON.parse(localStorage.getItem(LS_UI)); if (u) ui = Object.assign(ui, u); } catch (e) {}
+  ui.filtroRed = (ui.filtroRed || []).filter(r => REDES.includes(r));
+  ui.filtroEstado = (ui.filtroEstado || []).filter(r => ESTADOS.includes(r));
+}
+function guardarDatos() {
+  try { localStorage.setItem(LS_DATOS, JSON.stringify({ version: 1, posts })); return true; }
+  catch (e) { toast('No se pudo guardar: el navegador se quedó sin espacio.', 'error'); return false; }
+}
+function guardarUI() { try { localStorage.setItem(LS_UI, JSON.stringify(ui)); } catch (e) {} }
+const buscarPost = id => posts.find(p => p.id === id);
+
+// ---------- Archivos (IndexedDB) ----------
+const DB = (() => {
+  let abrir;
+  function db() {
+    return abrir || (abrir = new Promise((res, rej) => {
+      if (!window.indexedDB) return rej(new Error('Sin IndexedDB'));
+      const r = indexedDB.open('miContenido', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('archivos', { keyPath: 'id' });
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => { abrir = null; rej(r.error); };
+    }));
+  }
+  async function tx(modo, fn) {
+    const base = await db();
+    return new Promise((res, rej) => {
+      const t = base.transaction('archivos', modo);
+      const req = fn(t.objectStore('archivos'));
+      let out;
+      if (req) req.onsuccess = () => { out = req.result; };
+      t.oncomplete = () => res(out);
+      t.onerror = () => rej(t.error);
+      t.onabort = () => rej(t.error || new Error('Operación cancelada'));
+    });
+  }
+  return {
+    put: o => tx('readwrite', s => s.put(o)),
+    get: id => tx('readonly', s => s.get(id)),
+    del: id => tx('readwrite', s => s.delete(id)),
+    keys: () => tx('readonly', s => s.getAllKeys()),
+    clear: () => tx('readwrite', s => s.clear())
+  };
+})();
+const urlCache = new Map();
+async function urlArchivo(meta) {
+  if (urlCache.has(meta.id)) return urlCache.get(meta.id);
+  const r = await DB.get(meta.id).catch(() => null);
+  if (!r) return null;
+  const url = URL.createObjectURL(new Blob([r.datos], { type: r.tipo || meta.tipo }));
+  urlCache.set(meta.id, url);
+  return url;
+}
+async function archivoComoFile(meta) {
+  const r = await DB.get(meta.id).catch(() => null);
+  return r ? new File([r.datos], r.nombre || meta.nombre, { type: r.tipo || meta.tipo }) : null;
+}
+async function borrarArchivo(id) {
+  try { await DB.del(id); } catch (e) {}
+  if (urlCache.has(id)) { URL.revokeObjectURL(urlCache.get(id)); urlCache.delete(id); }
+}
+function adivinarTipo(nombre) {
+  const ext = (nombre.split('.').pop() || '').toLowerCase();
+  return ({ jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp', heic:'image/heic', heif:'image/heif',
+    mp4:'video/mp4', mov:'video/quicktime', m4v:'video/mp4', webm:'video/webm' })[ext] || 'application/octet-stream';
+}
+const esVideo = m => (m.tipo || '').startsWith('video/');
+function htmlMedia(meta, url) {
+  return esVideo(meta)
+    ? `<video src="${url}#t=0.1" muted playsinline preload="metadata"></video>`
+    : `<img src="${url}" alt="" draggable="false">`;
+}
+async function rellenarMedios(raiz) {
+  for (const el of $$('[data-media]', raiz)) {
+    const id = el.dataset.media;
+    const p = posts.find(x => x.archivos.some(a => a.id === id)) || (editor && editor.draft);
+    const meta = p && p.archivos.find(a => a.id === id);
+    if (!meta) continue;
+    const url = await urlArchivo(meta);
+    if (url && el.isConnected) el.insertAdjacentHTML('afterbegin', htmlMedia(meta, url));
+  }
+}
+
+// ---------- Íconos pequeños ----------
+const iconoRed = r => `<span class="red-ico" style="color:${COLOR_RED[r]}" title="${r}">${ICONO_RED[r]}</span>`;
+const iconoHerr = h => `<span class="herr" style="background:${HERR[h].bg}" title="Editado en ${h}">${HERR[h].l}</span>`;
+
+// ---------- Render principal ----------
+function diasSemana() { return [0,1,2,3,4,5,6].map(i => ymd(sumarDias(semana, i))); }
+function postsDeSemana() { const d = new Set(diasSemana()); return posts.filter(p => p.fecha && d.has(p.fecha)); }
+function pasaFiltros(p) {
+  return (!ui.filtroRed.length || ui.filtroRed.includes(p.red)) && (!ui.filtroEstado.length || ui.filtroEstado.includes(p.estado));
+}
+function render() { renderRango(); renderResumen(); renderFiltros(); renderCalendario(); renderBanco(); }
+
+function renderRango() {
+  const a = semana, b = sumarDias(semana, 6);
+  const txt = a.getMonth() === b.getMonth()
+    ? `${a.getDate()} – ${b.getDate()} ${MESES[b.getMonth()]} ${b.getFullYear()}`
+    : `${a.getDate()} ${MESES[a.getMonth()]} – ${b.getDate()} ${MESES[b.getMonth()]} ${b.getFullYear()}`;
+  $('#rango').textContent = txt;
+}
+function renderResumen() {
+  const s = postsDeSemana();
+  const faltan = s.filter(p => p.estado === 'Idea' || p.estado === 'Guion').length;
+  const cnt = (campo, v) => s.filter(p => p[campo] === v).length;
+  $('#resumen').innerHTML = `<div class="kpis">
+    <div class="kpi"><div class="kpi-num" id="kpi-total">${s.length}</div><div class="kpi-lbl">posts esta semana</div></div>
+    <div class="kpi ${faltan ? 'alerta' : ''}"><div class="kpi-num" id="kpi-faltan">${faltan}</div><div class="kpi-lbl">faltan por grabar</div></div>
+    <div class="kpi ancho"><div class="kpi-lbl">Por estado</div><div class="mini">${ESTADOS.map(e => { const n = cnt('estado', e);
+      return `<span class="pill ${n ? '' : 'cero'}"><span class="punto" style="background:${COLOR_ESTADO[e]}"></span>${e} <b>${n}</b></span>`; }).join('')}${s.length ? '' : '<span class="ayuda solo-cel">—</span>'}</div></div>
+    <div class="kpi ancho"><div class="kpi-lbl">Por red social</div><div class="mini">${REDES.map(r => { const n = cnt('red', r);
+      return `<span class="pill ${n ? '' : 'cero'}">${iconoRed(r)}${r} <b>${n}</b></span>`; }).join('')}${s.length ? '' : '<span class="ayuda solo-cel">—</span>'}</div></div>
+  </div>`;
+}
+function renderFiltros() {
+  const hay = ui.filtroRed.length || ui.filtroEstado.length;
+  $('#filtros').innerHTML = `<span class="etq">Filtrar:</span>
+    ${REDES.map(r => `<button class="chip ${ui.filtroRed.includes(r) ? 'on' : ''}" data-action="filtro" data-tipo="filtroRed" data-valor="${r}">${iconoRed(r)}${r}</button>`).join('')}
+    <span class="sep"></span>
+    ${ESTADOS.map(e => `<button class="chip ${ui.filtroEstado.includes(e) ? 'on' : ''}" data-action="filtro" data-tipo="filtroEstado" data-valor="${e}"><span class="punto" style="background:${COLOR_ESTADO[e]}"></span>${e}</button>`).join('')}
+    ${hay ? '<button class="chip" data-action="filtro-limpiar">✕ Quitar filtros</button>' : ''}`;
+}
+function htmlTarjeta(p) {
+  const c = COLOR_ESTADO[p.estado];
+  const a = p.archivos[0];
+  return `<article class="card" data-drag="post" data-id="${p.id}" data-action="abrir" style="--c:${c};--ct:${c}14" title="${esc(p.titulo)} · ${p.estado}">
+    <div class="card-cuerpo">
+      <div class="card-tit">${esc(p.titulo) || '<i>Sin título</i>'}</div>
+      <div class="card-meta">${iconoRed(p.red)}<span class="fmt">${p.formato}</span>${p.editado.map(iconoHerr).join('')}</div>
+    </div>
+    ${a ? `<div class="thumb" data-media="${a.id}">${p.archivos.length > 1 ? `<span class="n">${p.archivos.length}</span>` : ''}</div>` : ''}
+  </article>`;
+}
+function renderCalendario() {
+  const hoy = ymd(new Date());
+  const html = diasSemana().map((f, i) => {
+    const d = parseYmd(f);
+    const lista = posts.filter(p => p.fecha === f && pasaFiltros(p))
+      .sort((a, b) => (a.hora || '99:99').localeCompare(b.hora || '99:99') || a.creado - b.creado);
+    return `<section class="dia ${f === hoy ? 'hoy' : ''}" data-drop="dia" data-fecha="${f}">
+      <div class="dia-cab"><div><span class="dia-nombre"><span class="nombre-corto">${DIAS_CORTOS[i]}</span><span class="nombre-largo">${DIAS[i]}</span></span><span class="dia-num">${d.getDate()}</span></div>
+      <button class="btn-add" data-action="nuevo-en-dia" data-fecha="${f}" aria-label="Nuevo post el ${DIAS[i]}" title="Nuevo post">＋</button></div>
+      <div class="lista">${lista.map(htmlTarjeta).join('') || '<div class="vacio">Sin posts</div>'}</div>
+    </section>`;
+  }).join('');
+  $('#calendario').innerHTML = `<div class="semana">${html}</div>`;
+  rellenarMedios($('#calendario'));
+}
+function renderBanco() {
+  const ideas = posts.filter(p => !p.fecha).sort((a, b) => b.creado - a.creado);
+  const el = $('#banco');
+  const abierto = el.classList.contains('abierto');
+  el.innerHTML = `<div class="banco-cab"><h2>💡 Banco de ideas <span class="fmt">(${ideas.length})</span></h2>
+      <button class="btn icono cerrar-banco" data-action="cerrar-banco" aria-label="Cerrar">✕</button></div>
+    <form class="banco-form" id="form-idea">
+      <input id="idea-titulo" placeholder="Escribe una idea rápida…" autocomplete="off" enterkeyhint="done">
+      <select id="idea-pilar" aria-label="Pilar">${PILARES.map(p => `<option>${p}</option>`).join('')}</select>
+      <button class="btn primario" type="submit">Guardar</button>
+    </form>
+    <p class="ayuda">Arrastra una idea a un día para programarla.</p>
+    <div class="banco-lista">${ideas.map(p => `<article class="card idea" data-drag="post" data-id="${p.id}" data-action="abrir" style="--cp:${COLOR_PILAR[p.pilar]}">
+        <div class="card-cuerpo"><div class="card-tit">${esc(p.titulo) || '<i>Sin título</i>'}</div>
+        <div class="card-meta"><span class="tag" style="background:${COLOR_PILAR[p.pilar]}22;color:${COLOR_PILAR[p.pilar]}">${p.pilar}</span>
+        ${p.estado !== 'Idea' || p.caption || p.archivos.length ? iconoRed(p.red) + `<span class="fmt">${p.formato}</span>` : ''}</div></div>
+        ${p.archivos[0] ? `<div class="thumb" data-media="${p.archivos[0].id}"></div>` : ''}
+      </article>`).join('') || '<div class="vacio">Aún no tienes ideas guardadas.</div>'}</div>`;
+  if (abierto) el.classList.add('abierto');
+  $('#fab-ideas').textContent = `💡 Ideas (${ideas.length})`;
+  rellenarMedios(el);
+}
+
+// ---------- Acciones (clics) ----------
+const acciones = {
+  'semana-ant': () => { semana = sumarDias(semana, -7); render(); },
+  'semana-sig': () => { semana = sumarDias(semana, 7); render(); },
+  'semana-hoy': () => { semana = lunesDe(new Date()); render(); },
+  'filtro': b => { const l = ui[b.dataset.tipo], v = b.dataset.valor; const i = l.indexOf(v); i >= 0 ? l.splice(i, 1) : l.push(v); guardarUI(); render(); },
+  'filtro-limpiar': () => { ui.filtroRed = []; ui.filtroEstado = []; guardarUI(); render(); },
+  'nuevo-post': () => { const hoy = ymd(new Date()); const dias = diasSemana(); abrirEditor(normalizarPost({ fecha: dias.includes(hoy) ? hoy : dias[0] }), true); },
+  'nuevo-en-dia': b => abrirEditor(normalizarPost({ fecha: b.dataset.fecha }), true),
+  'abrir': b => { if (Date.now() < drag.suprimirHasta) return; const p = buscarPost(b.dataset.id); if (p) abrirEditor(p, false); },
+  'abrir-banco': () => abrirBanco(true),
+  'cerrar-banco': () => abrirBanco(false),
+  'menu': abrirMenu,
+  'cerrar-capa': b => cerrarCapa(b.closest('.capa')),
+};
+function abrirBanco(si) {
+  $('#banco').classList.toggle('abierto', si);
+  $('.fondo-banco').classList.toggle('ver', si);
+  if (si && !esTactil()) setTimeout(() => $('#idea-titulo')?.focus(), 50);
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-action]');
+  if (!b || b.disabled) return;
+  const fn = acciones[b.dataset.action];
+  if (fn) { e.preventDefault(); fn(b, e); }
+});
+document.addEventListener('submit', e => {
+  if (e.target.id !== 'form-idea') return;
+  e.preventDefault();
+  const t = $('#idea-titulo').value.trim();
+  if (!t) { $('#idea-titulo').focus(); return; }
+  posts.push(normalizarPost({ titulo: t, pilar: $('#idea-pilar').value, estado: 'Idea', fecha: null }));
+  guardarDatos();
+  const pil = $('#idea-pilar').value;
+  renderBanco();
+  $('#idea-pilar').value = pil;
+  $('#idea-titulo').focus();
+  toast('Idea guardada 💡');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const capas = $$('#capas .capa');
+    if (capas.length) { const c = capas[capas.length - 1]; if (c._alCerrar) c._alCerrar(); else cerrarCapa(c); }
+    else abrirBanco(false);
+  }
+});
+
+// ---------- Capas (ventanas) ----------
+function abrirCapa(html, { alCerrar } = {}) {
+  const c = document.createElement('div');
+  c.className = 'capa';
+  c.innerHTML = html;
+  c._alCerrar = alCerrar;
+  $('#capas').appendChild(c);
+  document.body.classList.add('bloqueado');
+  c.querySelector('.modal-fondo').addEventListener('click', e => {
+    if (e.target === e.currentTarget) { if (c._alCerrar) c._alCerrar(); else cerrarCapa(c); }
+  });
+  return c;
+}
+function cerrarCapa(c) {
+  if (!c) return;
+  c.remove();
+  if (!$('#capas .capa')) document.body.classList.remove('bloqueado');
+}
+function marcoModal(titulo, cuerpo, pie, clase = '') {
+  return `<div class="modal-fondo"><div class="modal ${clase}" role="dialog" aria-modal="true" aria-label="${esc(titulo)}">
+    <div class="modal-cab"><h2>${titulo}</h2><button class="btn icono" data-action="cerrar-capa" aria-label="Cerrar">✕</button></div>
+    <div class="modal-cuerpo">${cuerpo}</div>${pie ? `<div class="modal-pie">${pie}</div>` : ''}</div></div>`;
+}
+
+// ---------- Copiar al portapapeles ----------
+function copiarTexto(texto) {
+  // Intento 1: método clásico (funciona sin esperar, dentro del clic)
+  let ok = false;
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = texto; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, texto.length);
+    ok = document.execCommand('copy');
+    ta.remove();
+  } catch (e) {}
+  if (ok) return Promise.resolve(true);
+  // Intento 2: API moderna
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texto).then(() => true, () => false);
+  return Promise.resolve(false);
+}
+function copiarConAviso(texto, msg) {
+  copiarTexto(texto).then(ok => {
+    if (ok) return toast(msg);
+    // Último recurso: mostrar el texto para copiarlo a mano
+    const c = abrirCapa(marcoModal('Copia este texto', `<p class="ayuda">Tu navegador no me dejó copiar automáticamente. Mantén presionado el texto → "Seleccionar todo" → "Copiar".</p>
+      <textarea class="grande" rows="12" readonly>${esc(texto)}</textarea>`, '<div class="der"><button class="btn primario" data-action="cerrar-capa">Listo</button></div>', 'chico'));
+    const ta = $('textarea', c); ta.focus(); ta.select();
+  });
+}
+const textoCaption = p => [p.caption, p.cta, p.hashtags].map(s => (s || '').trim()).filter(Boolean).join('\n\n');
+
+// ---------- Descargar / compartir archivos ----------
+function descargarBlob(blob, nombre) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nombre; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+function puedeCompartir(files) {
+  try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files })); } catch (e) { return false; }
+}
+
+// =========================================================
+//   EDITOR DE TARJETA
+// =========================================================
+let editor = null; // { draft, esNuevo, nuevos:Set, quitados:Set, files:Map, sucio, capa }
+
+function abrirEditor(post, esNuevo) {
+  const draft = normalizarPost(JSON.parse(JSON.stringify(post)));
+  editor = { draft, esNuevo, nuevos: new Set(), quitados: new Set(), files: new Map(), sucio: false };
+  const p = draft;
+  const titulo = esNuevo ? 'Nuevo post' : (p.fecha ? 'Editar post' : 'Editar idea');
+  const cuerpo = `
+    <label class="campo"><span>Título</span><input data-campo="titulo" value="${esc(p.titulo)}" placeholder="¿De qué trata el post?" autocomplete="off"></label>
+    <div class="fila2">
+      <label class="campo"><span>Fecha de publicación</span><input type="date" data-campo="fecha" value="${p.fecha || ''}"></label>
+      <label class="campo"><span>Hora</span><input type="time" data-campo="hora" value="${p.hora}"></label>
+    </div>
+    <p class="ayuda">Si borras la fecha, el post se guarda en el banco de ideas.</p>
+    ${grupoChips('Red social', 'red', REDES, r => iconoRed(r) + r)}
+    ${grupoChips('Formato', 'formato', FORMATOS)}
+    ${grupoChips('Estado', 'estado', ESTADOS, e => `<span class="punto" style="background:${COLOR_ESTADO[e]}"></span>${e}`)}
+    ${grupoChips('Pilar de contenido', 'pilar', PILARES, x => `<span class="punto" style="background:${COLOR_PILAR[x]}"></span>${x}`)}
+    ${grupoChips('Editado en (puedes marcar varios)', 'editado', HERRAMIENTAS, h => iconoHerr(h) + h)}
+    <div class="seccion">
+      <label class="campo"><span>Caption</span><textarea data-campo="caption" rows="5" placeholder="El texto de la publicación…">${esc(p.caption)}</textarea></label>
+      <label class="campo"><span>CTA (llamada a la acción)</span><input data-campo="cta" value="${esc(p.cta)}" placeholder="Ej. Comenta QUIERO y te envío el link"></label>
+      <label class="campo"><span>Hashtags</span><textarea data-campo="hashtags" rows="2" placeholder="#ejemplo #otro">${esc(p.hashtags)}</textarea></label>
+      <div class="fila-botones"><button class="btn suave" data-action="ed-copiar">📋 Copiar caption</button><span class="ayuda">Copia caption + CTA + hashtags juntos.</span></div>
+    </div>
+    <label class="campo"><span>Notas / guion</span><textarea data-campo="notas" rows="6" placeholder="Guion, ideas de tomas, diapositivas…">${esc(p.notas)}</textarea></label>
+    <div class="seccion"><span class="seccion-tit">Links</span><div id="ed-links"></div>
+      <button class="btn" data-action="ed-link-agregar">＋ Agregar link</button></div>
+    <div class="seccion"><span class="seccion-tit">Fotos y videos</span><div id="ed-archivos"></div></div>`;
+  const pie = `<div class="izq">${esNuevo ? '' : `<button class="btn peligro" data-action="ed-borrar">🗑 Borrar</button><button class="btn" data-action="ed-duplicar">⧉ Duplicar</button>`}
+      ${!esNuevo && p.fecha ? '<button class="btn" data-action="ed-al-banco">💡 Al banco</button>' : ''}</div>
+    <div class="der"><button class="btn" data-action="ed-cancelar">Cancelar</button><button class="btn primario" data-action="ed-guardar">Guardar</button></div>`;
+  editor.capa = abrirCapa(marcoModal(titulo, cuerpo, pie).replace('data-action="cerrar-capa"', 'data-action="ed-cancelar"'), { alCerrar: () => cancelarEditor() });
+  editor.capa.classList.add('capa-editor');
+  renderLinks(); renderArchivos();
+  if (esNuevo && !esTactil()) setTimeout(() => $('[data-campo="titulo"]', editor.capa)?.focus(), 30);
+  // Precarga los archivos en memoria para que "Compartir" funcione al instante en el iPhone
+  p.archivos.forEach(m => archivoComoFile(m).then(f => { if (f && editor) editor.files.set(m.id, f); }));
+}
+function grupoChips(etq, campo, lista, fmt = x => x) {
+  const val = editor.draft[campo];
+  const multi = Array.isArray(val);
+  return `<div class="grupo"><span class="seccion-tit">${etq}</span><div class="chips" data-grupo="${campo}">
+    ${lista.map(v => { const on = multi ? val.includes(v) : val === v;
+      const est = campo === 'estado' ? ` estado" style="--c:${COLOR_ESTADO[v]};--ct:${COLOR_ESTADO[v]}26` : '';
+      return `<button type="button" class="chip${on ? ' on' : ''}${est}" data-action="ed-chip" data-campo="${campo}" data-valor="${v}" aria-pressed="${on}">${fmt(v)}</button>`; }).join('')}
+  </div></div>`;
+}
+function renderLinks() {
+  const el = $('#ed-links', editor.capa);
+  el.innerHTML = editor.draft.links.map((l, i) => { const u = urlSegura(l.url);
+    return `<div class="link-fila">
+      <input data-link="${i}" data-lcampo="nombre" value="${esc(l.nombre)}" placeholder="Nombre (ej. Portada Canva)" autocomplete="off">
+      <input data-link="${i}" data-lcampo="url" value="${esc(l.url)}" placeholder="https://…" inputmode="url" autocapitalize="off" autocomplete="off">
+      <a class="btn icono" data-abrir-link="${i}" href="${esc(u || '#')}" target="_blank" rel="noopener noreferrer" title="Abrir en otra pestaña">↗</a>
+      <button class="btn icono" data-action="ed-link-quitar" data-i="${i}" title="Quitar link" aria-label="Quitar link">✕</button></div>`; }).join('')
+    || '<p class="ayuda">Sin links. Ej. "Portada Canva", "Video CapCut".</p>';
+}
+function renderArchivos() {
+  const p = editor.draft, el = $('#ed-archivos', editor.capa);
+  const total = p.archivos.reduce((s, a) => s + a.tam, 0);
+  el.innerHTML = `<div class="arch-grid">${p.archivos.map((a, i) => `<div class="arch">
+      <div class="arch-media" data-media="${a.id}"></div>
+      <div class="arch-ctrl"><button class="mini-btn" data-action="ed-arch-mover" data-i="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''} title="Mover antes" aria-label="Mover antes">←</button>
+      <span>${i + 1}</span>
+      <button class="mini-btn" data-action="ed-arch-mover" data-i="${i}" data-d="1" ${i === p.archivos.length - 1 ? 'disabled' : ''} title="Mover después" aria-label="Mover después">→</button>
+      <button class="mini-btn" data-action="ed-arch-quitar" data-i="${i}" title="Quitar archivo" aria-label="Quitar archivo">✕</button></div></div>`).join('')}</div>
+    <div class="fila-botones">
+      <label class="btn suave">＋ Subir fotos o videos<input type="file" accept="image/*,video/*" multiple hidden data-subir></label>
+      ${p.archivos.length ? `<button class="btn" data-action="ed-compartir">📤 Compartir</button><button class="btn" data-action="ed-descargar">⬇ Descargar</button>` : ''}
+      ${p.estado === 'Publicado' && p.archivos.length ? `<button class="btn peligro" data-action="ed-borrar-archivos">🗑 Borrar archivos (liberar espacio)</button>` : ''}
+    </div>
+    <p class="ayuda" id="ed-arch-info">${p.archivos.length ? `${p.archivos.length} archivo(s) · ${tamTexto(total)}. Para carruseles, el orden de aquí es el orden de las fotos.` : 'Puedes subir varias fotos (carrusel) o videos.'}</p>`;
+  rellenarMedios(el);
+}
+
+// Campos de texto
+document.addEventListener('input', e => {
+  if (!editor || !editor.capa.contains(e.target)) return;
+  const t = e.target;
+  if (t.dataset.campo) {
+    editor.draft[t.dataset.campo] = t.value;
+    editor.sucio = true;
+  } else if (t.dataset.link !== undefined) {
+    const i = +t.dataset.link;
+    editor.draft.links[i][t.dataset.lcampo] = t.value;
+    editor.sucio = true;
+    if (t.dataset.lcampo === 'url') { const a = $(`[data-abrir-link="${i}"]`, editor.capa); a.href = urlSegura(t.value) || '#'; }
+  }
+});
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-abrir-link]');
+  if (a && a.getAttribute('href') === '#') { e.preventDefault(); toast('Primero escribe la dirección del link'); }
+});
+// Subir archivos
+document.addEventListener('change', async e => {
+  if (!e.target.matches('[data-subir]') || !editor) return;
+  const input = e.target, files = Array.from(input.files || []);
+  input.value = '';
+  if (!files.length) return;
+  const ed = editor;
+  const info = $('#ed-arch-info', ed.capa); if (info) info.textContent = 'Guardando archivo(s)…';
+  let ok = 0;
+  for (const f of files) {
+    const meta = { id: uid(), nombre: f.name || 'archivo', tipo: f.type || adivinarTipo(f.name || ''), tam: f.size };
+    try {
+      const datos = await f.arrayBuffer();
+      await DB.put({ ...meta, datos });
+      ed.nuevos.add(meta.id);
+      ed.draft.archivos.push(meta);
+      ed.files.set(meta.id, new File([datos], meta.nombre, { type: meta.tipo }));
+      ok++;
+    } catch (err) {
+      toast('No se pudo guardar "' + meta.nombre + '". Puede que no quede espacio en el navegador.', 'error');
+    }
+  }
+  if (ok) ed.sucio = true;
+  if (editor === ed) renderArchivos();
+  if (ok) toast(ok === 1 ? 'Archivo agregado' : ok + ' archivos agregados');
+});
+
+Object.assign(acciones, {
+  'ed-chip': b => {
+    const d = editor.draft, campo = b.dataset.campo, v = b.dataset.valor;
+    if (Array.isArray(d[campo])) {
+      const i = d[campo].indexOf(v); i >= 0 ? d[campo].splice(i, 1) : d[campo].push(v);
+      d[campo] = HERRAMIENTAS.filter(h => d[campo].includes(h));
+      b.classList.toggle('on', i < 0); b.setAttribute('aria-pressed', i < 0);
+    } else {
+      d[campo] = v;
+      $$(`[data-grupo="${campo}"] .chip`, editor.capa).forEach(c => { c.classList.toggle('on', c === b); c.setAttribute('aria-pressed', c === b); });
+      if (campo === 'estado') renderArchivos();
+    }
+    editor.sucio = true;
+  },
+  'ed-copiar': () => {
+    const t = textoCaption(editor.draft);
+    if (!t) return toast('Todavía no escribiste caption, CTA ni hashtags');
+    copiarConAviso(t, 'Caption copiado ✓');
+  },
+  'ed-link-agregar': () => {
+    editor.draft.links.push({ nombre: '', url: '' }); editor.sucio = true; renderLinks();
+    const ins = $$('#ed-links input[data-lcampo="nombre"]', editor.capa); ins[ins.length - 1]?.focus();
+  },
+  'ed-link-quitar': b => { editor.draft.links.splice(+b.dataset.i, 1); editor.sucio = true; renderLinks(); },
+  'ed-arch-mover': b => {
+    const l = editor.draft.archivos, i = +b.dataset.i, j = i + +b.dataset.d;
+    if (j < 0 || j >= l.length) return;
+    [l[i], l[j]] = [l[j], l[i]]; editor.sucio = true; renderArchivos();
+  },
+  'ed-arch-quitar': b => {
+    const [m] = editor.draft.archivos.splice(+b.dataset.i, 1);
+    if (editor.nuevos.has(m.id)) { editor.nuevos.delete(m.id); borrarArchivo(m.id); } else editor.quitados.add(m.id);
+    editor.files.delete(m.id); editor.sucio = true; renderArchivos();
+  },
+  'ed-compartir': () => compartirArchivos(),
+  'ed-descargar': () => descargarArchivos(),
+  'ed-borrar-archivos': async () => {
+    const d = editor.draft;
+    if (!confirm(`¿Borrar ${d.archivos.length} archivo(s) de este post para liberar espacio? Esto no se puede deshacer.`)) return;
+    const ids = d.archivos.map(a => a.id);
+    for (const id of ids) await borrarArchivo(id);
+    d.archivos = []; editor.files.clear(); editor.nuevos.clear(); editor.quitados.clear();
+    const orig = buscarPost(d.id);
+    if (orig) { orig.archivos = []; guardarDatos(); render(); }
+    renderArchivos();
+    toast('Archivos borrados. Espacio liberado ✓');
+  },
+  'ed-guardar': () => { guardarEditor(); },
+  'ed-cancelar': () => cancelarEditor(),
+  'ed-borrar': async () => {
+    const d = editor.draft;
+    if (!confirm(`¿Borrar "${d.titulo || 'Sin título'}"? También se borrarán sus archivos.`)) return;
+    const orig = buscarPost(d.id);
+    const ids = new Set([...(orig ? orig.archivos.map(a => a.id) : []), ...editor.nuevos]);
+    posts = posts.filter(p => p.id !== d.id);
+    guardarDatos();
+    for (const id of ids) borrarArchivo(id);
+    cerrarEditor(); render(); toast('Post borrado');
+  },
+  'ed-duplicar': async () => {
+    if (!guardarEditor(true)) return;
+    const orig = buscarPost(editor.draft.id);
+    const copia = normalizarPost(JSON.parse(JSON.stringify(orig)));
+    copia.id = uid(); copia.creado = Date.now(); copia.titulo = (orig.titulo || 'Sin título') + ' (copia)';
+    copia.archivos = [];
+    for (const m of orig.archivos) {
+      try { const r = await DB.get(m.id); if (r) { const nid = uid(); await DB.put({ ...r, id: nid }); copia.archivos.push({ ...m, id: nid }); } } catch (e) {}
+    }
+    posts.push(copia); guardarDatos();
+    cerrarEditor(); render();
+    abrirEditor(copia, false);
+    toast('Copia creada ✓ (ya la estás viendo)');
+  },
+  'ed-al-banco': () => {
+    editor.draft.fecha = null;
+    if (guardarEditor(true)) { cerrarEditor(); render(); toast('Devuelto al banco de ideas 💡'); }
+  },
+});
+
+function guardarEditor(silencioso) {
+  const d = editor.draft;
+  d.titulo = d.titulo.trim() || 'Sin título';
+  if (d.fecha && !/^\d{4}-\d{2}-\d{2}$/.test(d.fecha)) d.fecha = null;
+  if (!d.fecha) d.fecha = null;
+  d.links = d.links.filter(l => l.nombre.trim() || l.url.trim()).map(l => ({ nombre: l.nombre.trim() || 'Link', url: l.url.trim() }));
+  const limpio = normalizarPost(d);
+  const i = posts.findIndex(p => p.id === limpio.id);
+  if (i >= 0) posts[i] = limpio; else posts.push(limpio);
+  if (!guardarDatos()) return false;
+  for (const id of editor.quitados) borrarArchivo(id);
+  editor.quitados.clear(); editor.nuevos.clear(); editor.sucio = false;
+  editor.draft = normalizarPost(JSON.parse(JSON.stringify(limpio)));
+  if (!silencioso) {
+    cerrarEditor(); render();
+    toast(limpio.fecha ? 'Guardado ✓' : 'Guardado en el banco de ideas 💡');
+  }
+  return true;
+}
+function cancelarEditor() {
+  if (!editor) return;
+  if (editor.sucio && !confirm('¿Salir sin guardar los cambios?')) return;
+  for (const id of editor.nuevos) borrarArchivo(id);
+  cerrarEditor();
+}
+function cerrarEditor() { if (editor) { cerrarCapa(editor.capa); editor = null; } }
+
+async function filesDelEditor() {
+  const out = [];
+  for (const m of editor.draft.archivos) {
+    let f = editor.files.get(m.id);
+    if (!f) { f = await archivoComoFile(m); if (f) editor.files.set(m.id, f); }
+    if (f) out.push(f);
+  }
+  return out;
+}
+function compartirArchivos() {
+  const ed = editor;
+  const files = ed.draft.archivos.map(m => ed.files.get(m.id)).filter(Boolean);
+  if (files.length < ed.draft.archivos.length) {
+    toast('Preparando archivos… toca "Compartir" otra vez en un segundo');
+    filesDelEditor(); return;
+  }
+  const cap = textoCaption(ed.draft);
+  if (puedeCompartir(files)) {
+    if (cap) copiarTexto(cap);
+    navigator.share({ files }).then(() => { if (cap) toast('Caption copiado: pégalo en la publicación'); })
+      .catch(err => { if (err && err.name === 'AbortError') return; descargarArchivos(); });
+    if (cap) toast('Caption copiado ✓ — pégalo al publicar');
+  } else {
+    toast('Tu navegador no permite compartir archivos aquí: los descargo');
+    descargarArchivos();
+  }
+}
+async function descargarArchivos() {
+  const files = await filesDelEditor();
+  files.forEach((f, i) => setTimeout(() => descargarBlob(f, f.name), i * 400));
+}
+
+// =========================================================
+//   ARRASTRAR (mouse y dedo)
+// =========================================================
+const drag = { el: null, id: null, activo: false, x0: 0, y0: 0, x: 0, y: 0, dx: 0, dy: 0, ghost: null, timer: null, sobre: null, suprimirHasta: 0, raf: null, tactil: false };
+
+function prepararArrastre(el, x, y, tactil) {
+  drag.el = el; drag.id = el.dataset.id; drag.x0 = drag.x = x; drag.y0 = drag.y = y; drag.activo = false; drag.tactil = tactil;
+}
+function iniciarArrastre() {
+  const el = drag.el; if (!el) return;
+  const post = buscarPost(drag.id); if (!post) return limpiarArrastre();
+  drag.activo = true;
+  const r = el.getBoundingClientRect();
+  drag.dx = drag.x0 - r.left; drag.dy = drag.y0 - r.top;
+  const g = el.cloneNode(true);
+  g.classList.add('ghost'); g.removeAttribute('data-action'); g.style.width = r.width + 'px';
+  document.body.appendChild(g); drag.ghost = g;
+  el.classList.add('arrastrando');
+  document.body.classList.add('arrastrando-algo');
+  if (post.fecha) document.body.classList.add('arrastrando-post');
+  if (!post.fecha && $('#banco').classList.contains('abierto') && matchMedia('(max-width:1100px)').matches) abrirBanco(false);
+  if (drag.tactil && navigator.vibrate) navigator.vibrate(15);
+  moverArrastre(drag.x, drag.y);
+  autoScroll();
+}
+function moverArrastre(x, y) {
+  drag.x = x; drag.y = y;
+  if (drag.ghost) drag.ghost.style.transform = `translate(${x - drag.dx}px, ${y - drag.dy}px) rotate(2deg)`;
+  const bajo = document.elementFromPoint(x, y);
+  let dest = bajo && bajo.closest('[data-drop]');
+  const post = buscarPost(drag.id);
+  if (dest && dest.dataset.drop === 'banco' && post && !post.fecha) dest = null;
+  if (dest !== drag.sobre) {
+    drag.sobre && drag.sobre.classList.remove('sobre');
+    dest && dest.classList.add('sobre');
+    drag.sobre = dest;
+  }
+}
+function autoScroll() {
+  if (!drag.activo) return;
+  const m = 80, h = innerHeight;
+  let v = 0;
+  if (drag.y < m) v = -Math.ceil((m - drag.y) / 5);
+  else if (drag.y > h - m) v = Math.ceil((drag.y - (h - m)) / 5);
+  if (v) { scrollBy(0, v); moverArrastre(drag.x, drag.y); }
+  drag.raf = requestAnimationFrame(autoScroll);
+}
+function terminarArrastre() {
+  if (drag.activo) {
+    drag.suprimirHasta = Date.now() + 300;
+    const dest = drag.sobre, post = buscarPost(drag.id);
+    if (dest && post) soltarEn(post, dest);
+  }
+  limpiarArrastre();
+}
+function limpiarArrastre() {
+  clearTimeout(drag.timer); cancelAnimationFrame(drag.raf);
+  drag.ghost && drag.ghost.remove();
+  drag.el && drag.el.classList.remove('arrastrando');
+  drag.sobre && drag.sobre.classList.remove('sobre');
+  document.body.classList.remove('arrastrando-algo', 'arrastrando-post');
+  Object.assign(drag, { el: null, id: null, activo: false, ghost: null, sobre: null, timer: null });
+}
+function soltarEn(post, dest) {
+  if (dest.dataset.drop === 'dia') {
+    const f = dest.dataset.fecha;
+    if (post.fecha === f) return;
+    const deBanco = !post.fecha;
+    post.fecha = f;
+    guardarDatos(); render();
+    toast(deBanco ? `Idea agregada al ${fechaBonita(f)} ✓` : `Movido al ${fechaBonita(f)} ✓`);
+  } else if (dest.dataset.drop === 'banco' && post.fecha) {
+    post.fecha = null;
+    guardarDatos(); render();
+    toast('Devuelto al banco de ideas 💡');
+  }
+}
+// Mouse
+document.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  const el = e.target.closest('[data-drag]');
+  if (!el || el.classList.contains('ghost')) return;
+  e.preventDefault();
+  prepararArrastre(el, e.clientX, e.clientY, false);
+});
+document.addEventListener('mousemove', e => {
+  if (!drag.el || drag.tactil) return;
+  if (!drag.activo) {
+    if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 6) { drag.x = e.clientX; drag.y = e.clientY; iniciarArrastre(); }
+    return;
+  }
+  moverArrastre(e.clientX, e.clientY);
+});
+document.addEventListener('mouseup', () => { if (drag.el && !drag.tactil) terminarArrastre(); });
+// Dedo (mantener presionado un momento y arrastrar)
+document.addEventListener('touchstart', e => {
+  if (e.touches.length !== 1) { if (!drag.activo) limpiarArrastre(); return; }
+  const el = e.target.closest('[data-drag]');
+  if (!el || el.classList.contains('ghost')) return;
+  const t = e.touches[0];
+  prepararArrastre(el, t.clientX, t.clientY, true);
+  drag.timer = setTimeout(iniciarArrastre, 320);
+}, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (!drag.el || !drag.tactil) return;
+  const t = e.touches[0];
+  if (!drag.activo) {
+    if (Math.hypot(t.clientX - drag.x0, t.clientY - drag.y0) > 10) limpiarArrastre(); // está desplazando la pantalla
+    else { drag.x = t.clientX; drag.y = t.clientY; }
+    return;
+  }
+  e.preventDefault();
+  moverArrastre(t.clientX, t.clientY);
+}, { passive: false });
+document.addEventListener('touchend', e => {
+  if (!drag.el || !drag.tactil) return;
+  if (drag.activo) { e.preventDefault(); terminarArrastre(); } else limpiarArrastre();
+}, { passive: false });
+document.addEventListener('touchcancel', () => { if (drag.tactil) limpiarArrastre(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('[data-drag]')) e.preventDefault(); });
+
+// =========================================================
+//   MENÚ "MÁS"
+// =========================================================
+function abrirMenu() {
+  const ult = ui.ultimoRespaldo ? `Último respaldo: ${new Date(ui.ultimoRespaldo).toLocaleDateString('es')}` : 'Aún no has exportado ningún respaldo.';
+  const c = abrirCapa(marcoModal('Más opciones', `
+    <div class="menu-grupo"><div class="menu-tit">✨ Plan con IA</div>
+      <button class="menu-item" data-action="ia-copiar">📋 Copiar instrucciones para la IA<small>Pégalas en Claude, ChatGPT o Gemini y pídele tu plan de la semana.</small></button>
+      <button class="menu-item" data-action="ia-importar">📥 Importar plan<small>Pega lo que te respondió la IA y revisa antes de agregarlo.</small></button>
+    </div>
+    <div class="menu-grupo"><div class="menu-tit">💾 Respaldo</div>
+      <button class="menu-item" data-action="respaldo-exportar">⬇ Exportar respaldo<small>Descarga un archivo con todos tus datos. ${esc(ult)}</small></button>
+      <button class="menu-item" data-action="respaldo-importar">⬆ Importar respaldo<small>Recupera tus datos o pásalos a otro dispositivo.</small></button>
+    </div>
+    <div class="menu-tit">📦 Almacenamiento</div><div id="info-alm" class="ayuda">Calculando…</div>`, '', 'chico'));
+  infoAlmacenamiento().then(t => { const el = $('#info-alm', c); if (el) el.innerHTML = t; });
+}
+async function infoAlmacenamiento() {
+  const partes = [];
+  const total = posts.reduce((s, p) => s + p.archivos.reduce((a, b) => a + b.tam, 0), 0);
+  partes.push(`${posts.length} posts e ideas · ${tamTexto(total)} en fotos y videos.`);
+  try {
+    if (navigator.storage && navigator.storage.persisted) {
+      const p = await navigator.storage.persisted();
+      partes.push(p ? '✅ Tus datos están protegidos: el navegador no los borrará solo.'
+        : '⚠️ El navegador podría borrar los datos si no usas la app por varios días. Agrégala a la pantalla de inicio y exporta respaldos seguido.');
+    }
+  } catch (e) {}
+  return partes.map(esc).join('<br>');
+}
+Object.assign(acciones, {
+  'ia-copiar': () => {
+    const a = semana, b = sumarDias(semana, 6);
+    const extra = `\n\nDato útil: la semana que estoy planificando va del lunes ${ymd(a)} al domingo ${ymd(b)}.`;
+    copiarConAviso(INSTRUCCIONES_IA + extra, 'Instrucciones copiadas ✓ Pégalas en tu IA');
+  },
+  'ia-importar': b => { cerrarCapa(b.closest('.capa')); abrirImportarPlan(); },
+  'respaldo-exportar': b => { cerrarCapa(b.closest('.capa')); abrirExportar(); },
+  'respaldo-importar': b => { cerrarCapa(b.closest('.capa')); $('#input-respaldo').click(); },
+});
+
+// =========================================================
+//   IMPORTAR PLAN DESDE UNA IA
+// =========================================================
+const CLAVES = {
+  titulo: ['titulo', 'title', 'tema', 'nombre'], fecha: ['fecha', 'date'], dia: ['dia', 'day', 'diadelasemana'], hora: ['hora', 'time', 'horario'],
+  red: ['red', 'redsocial', 'plataforma', 'platform'], formato: ['formato', 'format', 'tipo'], estado: ['estado', 'status'],
+  pilar: ['pilar', 'pilardecontenido', 'pillar', 'categoria'], caption: ['caption', 'copy', 'texto', 'descripcion'],
+  hashtags: ['hashtags', 'hashtag', 'etiquetas'], cta: ['cta', 'llamadaalaaccion', 'calltoaction'],
+  notas: ['notas', 'nota', 'guion', 'notasguion', 'script', 'notes'], editado: ['editadoen', 'editado', 'herramienta', 'herramientas', 'editor'],
+  links: ['links', 'link', 'enlaces', 'enlace']
+};
+const ALIAS = {
+  red: { ig: 'Instagram', insta: 'Instagram', yt: 'YouTube', youtubeshorts: 'YouTube', shorts: 'YouTube', tt: 'TikTok' },
+  formato: { carousel: 'Carrusel', carrousel: 'Carrusel', carrucel: 'Carrusel', reels: 'Reel', short: 'Reel', shorts: 'Reel', historias: 'Historia', story: 'Historia', stories: 'Historia', video: 'Video largo', videos: 'Video largo', videolargos: 'Video largo' },
+  estado: { ideas: 'Idea', guiones: 'Guion', script: 'Guion', grabada: 'Grabado', programada: 'Programado', publicada: 'Publicado' },
+  pilar: { educacion: 'Educativo', educativa: 'Educativo', ventas: 'Venta', inspiracional: 'Inspiración', inspiracion: 'Inspiración' },
+  editado: { otra: 'Otro', otros: 'Otro' }
+};
+const DIAS_EN = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+function elegir(lista, valor, alias) {
+  const n = norm(valor);
+  if (!n) return null;
+  return lista.find(v => norm(v) === n) || (alias && alias[n]) || lista.find(v => norm(v) + 's' === n) || null;
+}
+function leerCampos(obj) {
+  const m = {}; for (const [k, v] of Object.entries(obj)) m[norm(k)] = v;
+  const r = {};
+  for (const [c, ks] of Object.entries(CLAVES)) for (const k of ks) {
+    if (m[k] !== undefined && m[k] !== null && !(typeof m[k] === 'string' && !m[k].trim())) { r[c] = m[k]; break; }
+  }
+  return r;
+}
+function parseHora(v) {
+  const s = String(v).trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ');
+  const m = s.match(/^(\d{1,2})(?:[:h](\d{2}))?\s*(am|pm)?\s*(?:hrs?|horas?|h)?$/);
+  if (!m) return null;
+  let h = +m[1]; const mi = +(m[2] || 0);
+  if (m[3] === 'pm' && h < 12) h += 12;
+  if (m[3] === 'am' && h === 12) h = 0;
+  if (h > 23 || mi > 59) return null;
+  return pad(h) + ':' + pad(mi);
+}
+function parseFecha(v) {
+  const s = String(v).trim();
+  let y, mo, d, m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ].*)?$/))) [y, mo, d] = [+m[1], +m[2], +m[3]];
+  else if ((m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/))) [d, mo, y] = [+m[1], +m[2], +m[3]];
+  else return null;
+  const f = new Date(y, mo - 1, d);
+  if (f.getFullYear() !== y || f.getMonth() !== mo - 1 || f.getDate() !== d) return null;
+  return ymd(f);
+}
+function parseDia(v, lunes) {
+  const n = norm(v);
+  if (!n) return null;
+  for (let i = 0; i < 7; i++) {
+    const es = norm(DIAS[i]);
+    if (n === es || n.startsWith(es) || n === DIAS_EN[i] || (n.length >= 3 && es.startsWith(n))) return ymd(sumarDias(lunes, i));
+  }
+  return null;
+}
+function aTexto(v, sep = '\n') { return Array.isArray(v) ? v.map(x => String(x ?? '')).join(sep) : (typeof v === 'object' && v !== null ? '' : String(v ?? '')); }
+
+class ErrorSimple extends Error {}
+function extraerJSON(texto) {
+  let t = String(texto || '').trim();
+  if (!t) throw new ErrorSimple('Primero pega el texto que te dio la IA.');
+  t = t.replace(/```[a-zA-Z]*\n?/g, '').replace(/^﻿/, '');
+  const i = t.search(/[\[{]/);
+  if (i < 0) throw new ErrorSimple('No encontré ningún plan en el texto. Asegúrate de copiar TODO lo que te dio la IA, incluidas las llaves { } del principio y del final.');
+  const fin = Math.max(t.lastIndexOf('}'), t.lastIndexOf(']'));
+  if (fin <= i) throw new ErrorSimple('El plan parece estar cortado: falta el final. Copia de nuevo la respuesta completa de la IA (a veces hay que pedirle "continúa").');
+  const s = t.slice(i, fin + 1);
+  const intentos = [
+    s,
+    s.replace(/,\s*([}\]])/g, '$1'),
+    s.replace(/[“”„]/g, '"').replace(/,\s*([}\]])/g, '$1')
+  ];
+  let primerError;
+  for (const x of intentos) { try { return JSON.parse(x); } catch (e) { primerError = primerError || e; } }
+  const pos = (String(primerError && primerError.message).match(/position (\d+)/) || [])[1];
+  const lin = (String(primerError && primerError.message).match(/line (\d+)/) || [])[1];
+  const linea = lin || (pos ? s.slice(0, +pos).split('\n').length : null);
+  throw new ErrorSimple('El texto tiene un error de formato' + (linea ? ` cerca de la línea ${linea}` : '') +
+    '. Suele pasar cuando falta una coma, sobran comillas dentro de un texto o la respuesta quedó cortada. Pídele a la IA: "Revisa que el JSON sea válido y envíamelo de nuevo completo".');
+}
+function analizarPlan(texto, lunes) {
+  let datos;
+  try { datos = extraerJSON(texto); } catch (e) { return { fatal: e instanceof ErrorSimple ? e.message : 'No pude leer el texto. Cópialo de nuevo completo.' }; }
+  let lista = [], ideas = [];
+  if (Array.isArray(datos)) lista = datos;
+  else if (datos && typeof datos === 'object') {
+    const m = {}; for (const [k, v] of Object.entries(datos)) m[norm(k)] = v;
+    const arr = m.posts || m.publicaciones || m.plan || m.semana || m.contenido || m.calendario;
+    if (Array.isArray(arr)) lista = arr;
+    else if (arr && typeof arr === 'object' && Array.isArray(arr.posts)) lista = arr.posts;
+    if (Array.isArray(m.ideas)) ideas = m.ideas;
+    if (!lista.length && !ideas.length && leerCampos(datos).titulo) lista = [datos];
+  }
+  if (!lista.length && !ideas.length) return { fatal: 'Leí el texto, pero no encontré ningún post. La IA debe poner los posts dentro de una lista llamada "posts". Vuelve a darle las instrucciones de la app.' };
+
+  const errores = [], validos = [];
+  const procesar = (item, n, tipo, forzarBanco) => {
+    const quien0 = `${tipo === 'idea' ? 'La idea' : 'El post'} ${n}`;
+    if (!item || typeof item !== 'object' || Array.isArray(item)) { errores.push(`${quien0} no tiene el formato correcto (debe ir entre llaves { }).`); return; }
+    const c = leerCampos(item);
+    const titulo = aTexto(c.titulo, ' ').trim();
+    const quien = titulo ? `${quien0} («${titulo.slice(0, 50)}»)` : quien0;
+    const errs = [];
+    if (!titulo) errs.push(`${quien0} no tiene título ("titulo").`);
+    let fecha = null;
+    if (!forzarBanco) {
+      if (c.fecha !== undefined) { fecha = parseFecha(c.fecha); if (!fecha) errs.push(`${quien} tiene una fecha que no entiendo: "${aTexto(c.fecha)}". Debe ser como 2026-11-10 (año-mes-día).`); }
+      else if (c.dia !== undefined) { fecha = parseDia(c.dia, lunes); if (!fecha) errs.push(`${quien} tiene un día que no entiendo: "${aTexto(c.dia)}". Usa lunes, martes, miércoles, jueves, viernes, sábado o domingo.`); }
+    }
+    let hora = '';
+    if (c.hora !== undefined) { hora = parseHora(c.hora); if (!hora) { errs.push(`${quien} tiene una hora que no entiendo: "${aTexto(c.hora)}". Usa el formato 19:00.`); hora = ''; } }
+    const val = (campo, lista, def, nombre) => {
+      if (c[campo] === undefined) return def;
+      const v = elegir(lista, aTexto(c[campo], ' '), ALIAS[campo]);
+      if (!v) errs.push(`${quien} tiene ${nombre} que no reconozco: "${aTexto(c[campo], ' ')}". Opciones válidas: ${lista.join(', ')}.`);
+      return v || def;
+    };
+    const red = val('red', REDES, 'Instagram', 'una red social');
+    const formato = val('formato', FORMATOS, 'Reel', 'un formato');
+    const estado = val('estado', ESTADOS, 'Idea', 'un estado');
+    const pilar = val('pilar', PILARES, 'Educativo', 'un pilar');
+    let editado = [];
+    if (c.editado !== undefined) {
+      const arr = Array.isArray(c.editado) ? c.editado : String(c.editado).split(/,|\/|\sy\s/);
+      for (const x of arr) {
+        if (!String(x ?? '').trim()) continue;
+        const h = elegir(HERRAMIENTAS, x, ALIAS.editado);
+        if (h) { if (!editado.includes(h)) editado.push(h); } else errs.push(`${quien} dice que se edita en "${x}", que no reconozco. Opciones válidas: ${HERRAMIENTAS.join(', ')}.`);
+      }
+    }
+    const links = [];
+    if (c.links !== undefined) {
+      for (const l of (Array.isArray(c.links) ? c.links : [c.links])) {
+        if (typeof l === 'string') { if (l.trim()) links.push({ nombre: 'Link', url: l.trim() }); }
+        else if (l && typeof l === 'object') {
+          const lc = {}; for (const [k, v] of Object.entries(l)) lc[norm(k)] = v;
+          const url = lc.url || lc.link || lc.enlace || lc.href;
+          if (!url) errs.push(`${quien} tiene un link sin dirección ("url").`);
+          else links.push({ nombre: String(lc.nombre || lc.name || lc.titulo || 'Link'), url: String(url).trim() });
+        }
+      }
+    }
+    let hashtags = c.hashtags === undefined ? '' : Array.isArray(c.hashtags)
+      ? c.hashtags.map(h => String(h).trim()).filter(Boolean).map(h => h.startsWith('#') ? h : '#' + h).join(' ') : aTexto(c.hashtags, ' ');
+    if (errs.length) { errores.push(...errs); return; }
+    validos.push(normalizarPost({
+      titulo, fecha, hora, red, formato, estado, pilar, editado, links, hashtags,
+      caption: aTexto(c.caption), cta: aTexto(c.cta, ' '), notas: aTexto(c.notas)
+    }));
+  };
+  lista.forEach((it, i) => procesar(it, i + 1, 'post', false));
+  ideas.forEach((it, i) => procesar(it, i + 1, 'idea', true));
+  return { validos, errores, total: lista.length + ideas.length };
+}
+
+let planActual = null;
+function abrirImportarPlan() {
+  const a = semana, b = sumarDias(semana, 6);
+  const c = abrirCapa(marcoModal('Importar plan de la IA', `
+    <p class="ayuda">Pega aquí <b>todo</b> lo que te respondió la IA. Los posts que digan un día ("lunes", "martes"…) se colocan en la semana que estás viendo: <b>${a.getDate()} ${MESES[a.getMonth()]} – ${b.getDate()} ${MESES[b.getMonth()]}</b>. Las ideas sin día van al banco de ideas.</p>
+    <textarea class="grande" id="ia-texto" rows="9" placeholder="Pega aquí el plan…" spellcheck="false" autocapitalize="off"></textarea>
+    <div class="fila-botones"><button class="btn" data-action="ia-pegar">📋 Pegar</button><button class="btn" data-action="ia-revisar">🔍 Revisar</button></div>
+    <div id="ia-resultado"></div>`,
+    `<div class="der"><button class="btn" data-action="cerrar-capa">Cancelar</button><button class="btn primario" id="ia-confirmar" data-action="ia-confirmar" disabled>Agregar al calendario</button></div>`));
+  planActual = null;
+  let t;
+  $('#ia-texto', c).addEventListener('input', () => { clearTimeout(t); t = setTimeout(revisarPlan, 350); });
+  if (!esTactil()) $('#ia-texto', c).focus();
+}
+function revisarPlan() {
+  const ta = $('#ia-texto'); if (!ta) return;
+  const res = $('#ia-resultado'), btn = $('#ia-confirmar');
+  planActual = null; btn.disabled = true; btn.textContent = 'Agregar al calendario';
+  if (!ta.value.trim()) { res.innerHTML = ''; return; }
+  const r = analizarPlan(ta.value, semana);
+  if (r.fatal) { res.innerHTML = `<div class="aviso error"><b>No pude leer el plan.</b><br>${esc(r.fatal)}</div>`; return; }
+  const fechados = r.validos.filter(p => p.fecha).sort((x, y) => (x.fecha + (x.hora || '99')).localeCompare(y.fecha + (y.hora || '99')));
+  const banco = r.validos.filter(p => !p.fecha);
+  const diasVista = new Set(diasSemana());
+  let html = '';
+  if (r.errores.length) html += `<div class="aviso error"><b>Encontré ${r.errores.length === 1 ? 'un problema' : r.errores.length + ' problemas'}:</b><ul>${r.errores.map(e => `<li>${esc(e)}</li>`).join('')}</ul>
+    ${r.validos.length ? 'Los posts con problemas <b>no</b> se agregarán. Puedes corregirlos aquí mismo o pedirle a la IA que los arregle.' : 'Corrígelo aquí mismo o pídele a la IA que lo arregle, y vuelve a pegarlo.'}</div>`;
+  if (r.validos.length) html += `<div class="aviso ok">✓ Listo para agregar: <b>${fechados.length}</b> post(s) al calendario${banco.length ? ` y <b>${banco.length}</b> idea(s) al banco` : ''}.</div>`;
+  let diaAnt = null;
+  for (const p of fechados) {
+    if (p.fecha !== diaAnt) { diaAnt = p.fecha; html += `<div class="prev-dia">${fechaBonita(p.fecha, true)} ${diasVista.has(p.fecha) ? '' : '<small>(otra semana)</small>'}</div>`; }
+    html += `<div class="prev-item" style="--c:${COLOR_ESTADO[p.estado]}">${iconoRed(p.red)}<span>${p.hora ? `<b>${p.hora}</b> · ` : ''}${esc(p.titulo)}</span><span class="fmt">${p.formato} · ${p.estado}</span></div>`;
+  }
+  if (banco.length) {
+    html += `<div class="prev-dia">💡 Banco de ideas</div>`;
+    for (const p of banco) html += `<div class="prev-item" style="--c:${COLOR_PILAR[p.pilar]}"><span>${esc(p.titulo)}</span><span class="fmt">${p.pilar}</span></div>`;
+  }
+  res.innerHTML = html;
+  if (r.validos.length) { planActual = r.validos; btn.disabled = false; btn.textContent = banco.length && !fechados.length ? `Agregar ${banco.length} al banco` : `Agregar ${r.validos.length}`; }
+}
+Object.assign(acciones, {
+  'ia-revisar': () => revisarPlan(),
+  'ia-pegar': async () => {
+    try { const t = await navigator.clipboard.readText(); if (t) { $('#ia-texto').value = t; revisarPlan(); } }
+    catch (e) { toast('No pude pegar automáticamente: mantén presionado el cuadro y elige "Pegar"'); $('#ia-texto').focus(); }
+  },
+  'ia-confirmar': b => {
+    if (!planActual || !planActual.length) return;
+    const nuevos = planActual.map(p => ({ ...p, id: uid() }));
+    let t = Date.now(); nuevos.forEach(p => p.creado = t++);
+    posts.push(...nuevos);
+    if (!guardarDatos()) { posts = posts.filter(p => !nuevos.includes(p)); return; }
+    const conFecha = nuevos.filter(p => p.fecha), enBanco = nuevos.length - conFecha.length;
+    const dias = new Set(diasSemana());
+    if (conFecha.length && !conFecha.some(p => dias.has(p.fecha))) semana = lunesDe(parseYmd(conFecha.map(p => p.fecha).sort()[0]));
+    planActual = null;
+    cerrarCapa(b.closest('.capa')); render();
+    toast(`Se agregaron ${conFecha.length} post(s)${enBanco ? ` y ${enBanco} idea(s) al banco` : ''} ✓`);
+  },
+});
+
+// =========================================================
+//   RESPALDO: EXPORTAR
+// =========================================================
+function tamañosRespaldo() {
+  const sin = new Blob([JSON.stringify({ app: 'mi-contenido', version: 1, posts })]).size + 200;
+  let arch = 0, n = 0;
+  for (const p of posts) for (const a of p.archivos) { arch += Math.ceil(a.tam / 3) * 4 + 200; n++; }
+  return { sin, con: sin + arch, n };
+}
+function abrirExportar() {
+  const t = tamañosRespaldo();
+  const MB = 1024 * 1024;
+  const c = abrirCapa(marcoModal('Exportar respaldo', `
+    <p class="ayuda">Se descarga un archivo con todos tus posts, ideas y links. Guárdalo en un lugar seguro (por ejemplo, en iCloud Drive o Google Drive).</p>
+    ${t.n ? `<label class="check"><input type="checkbox" id="exp-arch" ${t.con < 60 * MB ? 'checked' : ''}> Incluir fotos y videos (${t.n})</label>` : ''}
+    <div id="exp-info"></div>`,
+    `<div class="der"><button class="btn" data-action="cerrar-capa">Cancelar</button><button class="btn primario" id="exp-btn" data-action="exp-preparar">Descargar respaldo</button></div>`, 'chico'));
+  const pintar = () => {
+    const con = $('#exp-arch', c)?.checked;
+    const tam = con ? t.con : t.sin;
+    let html = `<div class="aviso ${con && tam > 50 * MB ? 'warn' : 'ok'}">El archivo pesará aproximadamente <b>${tamTexto(tam)}</b>.`;
+    if (t.n) html += `<br><small>Sin fotos ni videos: ${tamTexto(t.sin)} · Con fotos y videos: ${tamTexto(t.con)}</small>`;
+    html += '</div>';
+    if (con && tam > 200 * MB) html += `<div class="aviso error"><b>Es muy grande.</b> Puede tardar mucho o fallar, sobre todo en el celular. Te recomiendo exportar <b>sin</b> fotos ni videos, o primero borrar los archivos de los posts ya publicados.</div>`;
+    else if (con && tam > 50 * MB) html += `<div class="aviso warn"><b>Es un archivo grande.</b> Puede tardar un poco y ocupar espacio en tu dispositivo. Si solo quieres respaldar tus textos, desmarca "Incluir fotos y videos".</div>`;
+    $('#exp-info', c).innerHTML = html;
+  };
+  $('#exp-arch', c)?.addEventListener('change', pintar);
+  pintar();
+}
+async function construirRespaldo(conArchivos) {
+  const meta = { app: 'mi-contenido', version: 1, exportado: new Date().toISOString(), incluyeArchivos: !!conArchivos, posts };
+  const partes = [JSON.stringify(meta).slice(0, -1) + ',"archivos":['];
+  let primero = true, faltan = 0;
+  if (conArchivos) {
+    for (const p of posts) for (const a of p.archivos) {
+      const r = await DB.get(a.id).catch(() => null);
+      if (!r) { faltan++; continue; }
+      const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(fr.error); fr.readAsDataURL(new Blob([r.datos], { type: r.tipo || 'application/octet-stream' })); });
+      partes.push((primero ? '' : ',') + JSON.stringify({ id: a.id, nombre: r.nombre, tipo: r.tipo, tam: r.tam }).slice(0, -1) + ',"datos":' + JSON.stringify(dataUrl) + '}');
+      primero = false;
+    }
+  }
+  partes.push(']}');
+  return { blob: new Blob(partes, { type: 'application/json' }), faltan };
+}
+Object.assign(acciones, {
+  'exp-preparar': async b => {
+    const capa = b.closest('.capa');
+    const con = !!$('#exp-arch', capa)?.checked;
+    b.disabled = true; b.textContent = 'Preparando…';
+    try {
+      const { blob } = await construirRespaldo(con);
+      const nombre = `mi-contenido-respaldo-${ymd(new Date())}${con ? '' : '-sin-archivos'}.json`;
+      const file = new File([blob], nombre, { type: 'application/json' });
+      ui.ultimoRespaldo = Date.now(); guardarUI();
+      if (esTactil() && puedeCompartir([file])) {
+        // En el celular: hace falta otro toque para abrir el menú de compartir / guardar en Archivos
+        $('.modal-pie', capa).innerHTML = `<div class="der"><button class="btn" id="exp-desc">⬇ Descargar</button><button class="btn primario" id="exp-guardar">💾 Guardar respaldo (${tamTexto(blob.size)})</button></div>`;
+        $('#exp-info', capa).insertAdjacentHTML('beforeend', '<div class="aviso ok">Respaldo listo. Toca <b>Guardar respaldo</b> y elige "Guardar en Archivos".</div>');
+        $('#exp-guardar', capa).onclick = () => navigator.share({ files: [file] }).then(() => { cerrarCapa(capa); toast('Respaldo guardado ✓'); })
+          .catch(err => { if (!err || err.name !== 'AbortError') descargarBlob(blob, nombre); });
+        $('#exp-desc', capa).onclick = () => { descargarBlob(blob, nombre); cerrarCapa(capa); toast('Respaldo descargado ✓'); };
+      } else {
+        descargarBlob(blob, nombre);
+        cerrarCapa(capa);
+        toast(`Respaldo descargado ✓ (${tamTexto(blob.size)})`);
+      }
+    } catch (e) {
+      b.disabled = false; b.textContent = 'Descargar respaldo';
+      toast('No se pudo crear el respaldo. Prueba sin fotos ni videos.', 'error');
+    }
+  },
+});
+
+// =========================================================
+//   RESPALDO: IMPORTAR
+// =========================================================
+function dataUrlABuffer(u) {
+  const coma = u.indexOf(',');
+  const bin = atob(u.slice(coma + 1));
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr.buffer;
+}
+$('#input-respaldo').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  let d;
+  try { d = JSON.parse(await f.text()); }
+  catch (err) { return toast('Ese archivo está dañado o no es un respaldo de Mi Contenido.', 'error'); }
+  if (!d || d.app !== 'mi-contenido' || !Array.isArray(d.posts)) {
+    return toast((d && (d.posts || Array.isArray(d))) ? 'Eso parece un plan de IA: usa "Importar plan" en vez de "Importar respaldo".' : 'Ese archivo no es un respaldo de Mi Contenido.', 'error');
+  }
+  const nArch = Array.isArray(d.archivos) ? d.archivos.length : 0;
+  const fecha = d.exportado ? new Date(d.exportado).toLocaleString('es') : 'fecha desconocida';
+  abrirCapa(marcoModal('Importar respaldo', `
+    <div class="aviso ok">Respaldo del <b>${esc(fecha)}</b><br>${d.posts.length} posts e ideas · ${nArch} fotos/videos${d.incluyeArchivos ? '' : ' (se exportó sin archivos)'}</div>
+    <p><b>¿Qué quieres hacer?</b></p>
+    <p class="ayuda"><b>Sumar:</b> agrega lo del respaldo a lo que ya tienes (si un post ya existe, se actualiza).<br>
+    <b>Reemplazar todo:</b> borra lo que tienes ahora en este dispositivo y deja solo lo del respaldo.</p>`,
+    `<div class="der"><button class="btn" data-action="cerrar-capa">Cancelar</button><button class="btn" id="imp-reemplazar">Reemplazar todo</button><button class="btn primario" id="imp-sumar">Sumar</button></div>`, 'chico'));
+  const capa = $$('#capas .capa').pop();
+  const hacer = async modo => {
+    if (modo === 'reemplazar' && !confirm('Se borrará todo lo que tienes ahora en este dispositivo y quedará solo lo del respaldo. ¿Continuar?')) return;
+    $$('.modal-pie button', capa).forEach(b => b.disabled = true);
+    $('#imp-sumar', capa).textContent = 'Importando…';
+    try { await importarRespaldo(d, modo); cerrarCapa(capa); }
+    catch (err) { toast('Algo falló al importar. Tus datos anteriores no se tocaron.', 'error'); $$('.modal-pie button', capa).forEach(b => b.disabled = false); }
+  };
+  $('#imp-sumar', capa).onclick = () => hacer('sumar');
+  $('#imp-reemplazar', capa).onclick = () => hacer('reemplazar');
+});
+async function importarRespaldo(d, modo) {
+  const entrantes = d.posts.map(normalizarPost);
+  const archivos = Array.isArray(d.archivos) ? d.archivos.filter(a => a && a.id && typeof a.datos === 'string') : [];
+  // 1) Guardar archivos primero (si algo falla, aún no tocamos los posts)
+  let guardados = 0;
+  for (const a of archivos) {
+    await DB.put({ id: String(a.id), nombre: a.nombre || 'archivo', tipo: a.tipo || '', tam: +a.tam || 0, datos: dataUrlABuffer(a.datos) });
+    guardados++;
+  }
+  // 2) Posts
+  let nuevaLista;
+  if (modo === 'reemplazar') nuevaLista = entrantes;
+  else {
+    nuevaLista = posts.slice();
+    for (const p of entrantes) { const i = nuevaLista.findIndex(x => x.id === p.id); if (i >= 0) nuevaLista[i] = p; else nuevaLista.push(p); }
+  }
+  // 3) Quitar referencias a archivos que no existen
+  const claves = new Set(await DB.keys().catch(() => []));
+  let perdidos = 0;
+  for (const p of nuevaLista) { const antes = p.archivos.length; p.archivos = p.archivos.filter(a => claves.has(a.id)); perdidos += antes - p.archivos.length; }
+  posts = nuevaLista;
+  guardarDatos();
+  await limpiarHuerfanos();
+  render();
+  toast(`Respaldo importado ✓ ${entrantes.length} posts/ideas, ${guardados} archivos` + (perdidos ? `. ${perdidos} archivo(s) no venían en el respaldo.` : ''));
+}
+async function limpiarHuerfanos() {
+  try {
+    const usados = new Set(posts.flatMap(p => p.archivos.map(a => a.id)));
+    if (editor) editor.draft.archivos.forEach(a => usados.add(a.id));
+    for (const k of await DB.keys()) if (!usados.has(k)) await borrarArchivo(k);
+  } catch (e) {}
+}
+
+// =========================================================
+//   INICIO
+// =========================================================
+async function pedirAlmacenamientoPersistente() {
+  try {
+    if (navigator.storage && navigator.storage.persist && !(await navigator.storage.persisted())) await navigator.storage.persist();
+  } catch (e) {}
+}
+async function revisarReferencias() {
+  try {
+    const claves = new Set(await DB.keys());
+    let cambio = false;
+    for (const p of posts) { const n = p.archivos.length; p.archivos = p.archivos.filter(a => claves.has(a.id)); if (p.archivos.length !== n) cambio = true; }
+    if (cambio) { guardarDatos(); render(); }
+    await limpiarHuerfanos();
+  } catch (e) {}
+}
+cargarDatos();
+render();
+pedirAlmacenamientoPersistente();
+revisarReferencias();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
